@@ -1,0 +1,96 @@
+import pandas as pd
+from datetime import datetime
+
+# Función para calcular el número de días en un mes
+def days_in_month(year, month):
+    next_month = month % 12 + 1
+    year = year if next_month > 1 else year + 1
+    last_day = datetime(year, next_month, 1) - pd.Timedelta(days=1)
+    return last_day.day
+# Ingrese valores
+year = 2024
+month = 12
+country = "Costa Rica" 
+format_ = "Walmart" 
+type_ = "CPA" ##Acá puede ser CPA/CPC/CPM/CPD
+
+#Ingrese presupuesto
+total_investment = 20486.10
+
+#Datos según modelo de compra CPA
+total_sales = 358506.80
+total_conversion = 4731.54
+
+#Datos según modelo de compra CPD
+
+total_downloads = 0
+#Datos según modelo de compra CPM
+
+total_impressions = 0 
+
+#Datos según modelo de compra CPC
+total_clicks = 0 
+
+# Función para dividir de manera segura
+def safe_division(numerator, denominator):
+    return numerator / denominator if denominator != 0 else 0
+
+# Cálculos de métricas promedios
+average_cpa = safe_division(total_investment, total_conversion)  
+average_roas = safe_division(total_sales, total_investment)      
+average_cpd = safe_division(total_investment, total_downloads)  
+average_cpm = safe_division(total_investment, total_impressions) * 1000  
+average_cpc = safe_division(total_investment, total_clicks) 
+# Calcular el número de días en el mes
+num_days = days_in_month(year, month)
+
+
+# Calcular promedios diarios
+daily_investment = safe_division(total_investment, num_days)
+daily_conversion = safe_division(total_conversion, num_days)
+daily_sales = safe_division(total_sales, num_days)
+daily_downloads = safe_division(total_downloads, num_days)
+daily_impressions = safe_division(total_impressions, num_days)
+daily_clicks = safe_division(total_clicks, num_days)
+
+# Crear un DataFrame con las fechas y los promedios diarios
+dates = pd.date_range(start=f"{year}-{month:02d}-01", periods=num_days, freq='D')
+data = {
+    'Fecha': dates,
+    'Pais': [country] * num_days,
+    'Formato': [format_] * num_days,
+    'Inversion': [daily_investment] * num_days,
+    'Meta Conversiones': [daily_conversion] * num_days,
+    'CPA': [average_cpa] * num_days,
+    'ROAS': [average_roas] * num_days,
+    'Ventas PAID': [daily_sales] * num_days,
+    'Descargas': [daily_downloads] * num_days,
+    'CPD': [average_cpd] * num_days,
+    'Impresiones': [daily_impressions] * num_days,
+    'CPM': [average_cpm] * num_days,
+    'Tipo de compra': [type_] * num_days,
+    'Clicks': [daily_clicks] * num_days,
+    'CPC': [average_cpc] * num_days
+}
+df = pd.DataFrame(data)
+
+# Ajustar precisión numérica
+df = df.round({
+    'Inversion': 2, 
+    'Meta Conversiones': 2,
+    'CPA': 2, 
+    'ROAS': 2, 
+    'Ventas PAID': 2, 
+    'Descargas': 2, 
+    'CPD': 2, 
+    'Impresiones': 0,
+    'CPM': 2, 
+    'Clicks': 2,
+    'CPC': 2
+})
+
+# Guardar el DataFrame en un archivo Excel
+file_path = 'daily_investment_and_sales.xlsx'
+df.to_excel(file_path, index=False)
+
+print(f"El archivo Excel ha sido guardado en {file_path}")
